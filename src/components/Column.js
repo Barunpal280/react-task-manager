@@ -1,9 +1,11 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
+import { useTaskContext } from "../context/TaskContext";
 
-const Column = ({ title, column, tasks, setTasks, searchQuery, priorityFilter }) => { 
+const Column = ({ title, column }) => {
+  const { tasks, setTasks, searchQuery, priorityFilter } = useTaskContext(); 
     
     // Logic: Filter the tasks array based on the props received from Parent
-    const displayedTasks = tasks.filter(task => {
+    const displayedTasks = tasks[column].filter(task => {
         const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
         
