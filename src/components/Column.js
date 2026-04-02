@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useTaskContext } from "../context/TaskContext";
 
 const Column = ({ title, column }) => {
-  const { tasks, setTasks, searchQuery, priorityFilter } = useTaskContext(); 
-    
-    // Logic: Filter the tasks array based on the props received from Parent
+  const { tasks, dispatch, searchQuery, priorityFilter } = useTaskContext();
+
+  // Logic: Filter the tasks array based on the props received from Parent
     const displayedTasks = tasks[column].filter(task => {
         const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
@@ -37,10 +37,7 @@ const Column = ({ title, column }) => {
     }
 
     const handleAddTask = (newTask) => {
-        setTasks(prevTasks => ({
-            ...prevTasks, // Copy all existing columns (inprogress, done)   
-            [column]: [...prevTasks[column], newTask] // Update the current column's array
-        }));
+        dispatch({ type: 'ADD_TASK', payload: { column, task: newTask } });
     };
 
     const submitTask = () => {
@@ -70,18 +67,8 @@ const Column = ({ title, column }) => {
     }
 
     const onMoveTask = (taskId, fromColumn, direction) => {
-        const toColumn = direction === "next" ? (fromColumn === "todo" ? "inprogress" : "done") : (fromColumn === "done" ? "inprogress" : "todo");
-        setTasks(prevTasks => {
-            const taskToMove = prevTasks[fromColumn].find(t => t.id === taskId);
-            if (!taskToMove) return prevTasks;
-
-            return {
-                ...prevTasks,
-                [fromColumn]: prevTasks[fromColumn].filter(t => t.id !== taskId),
-                [toColumn]: [...prevTasks[toColumn], taskToMove]
-            };
-        });
-    }
+        dispatch({ type: 'MOVE_TASK', payload: { taskId, fromColumn, direction } });
+    };
          
 
 
@@ -129,10 +116,10 @@ const Column = ({ title, column }) => {
                             <p className="task-due-date" style={{ marginTop: '5px' }}>Due Date: {task.dueDate || "N/A"}</p>
                         </>
                     )}
-                    <span className="delete-task" onClick={() => setTasks(prevTasks => ({
-                        ...prevTasks,
-                        [column]: prevTasks[column].filter(t => t.id !== task.id)
-                    }))}>X</span>
+                    <span
+                        className="delete-task"
+                        onClick={() => dispatch({ type: 'DELETE_TASK', payload: { taskId: task.id, column } })}
+                    >X</span>
                 </div>
             ))}
         </div>
